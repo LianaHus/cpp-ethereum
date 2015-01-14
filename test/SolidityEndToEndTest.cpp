@@ -28,10 +28,6 @@
 #include <libdevcrypto/SHA3.h>
 #include <test/solidityExecutionFramework.h>
 
-#ifdef _MSC_VER
-#pragma warning(disable: 4307) //integral constant overflow for high_bits_cleaning
-#endif
-
 using namespace std;
 
 namespace dev
@@ -772,6 +768,58 @@ BOOST_AUTO_TEST_CASE(struct_reference)
 	BOOST_CHECK(callContractFunction("check()") == encodeArgs(true));
 }
 
+BOOST_AUTO_TEST_CASE(deleteStruct)
+{
+	char const* sourceCode = R"(
+		contract test {
+			struct topStruct {
+				nestedStruct nstr;
+				uint topValue;
+				mapping (uint => uint) topMapping;
+			}
+			topStruct str;
+			struct nestedStruct {
+				uint nestedValue;
+				mapping (uint => bool) nestedMapping;
+			}
+			function test(){
+				str.topValue = 1;
+				str.topMapping[0] = 1;
+				str.topMapping[1] = 2;
+
+				str.nstr.nestedValue = 2;
+				str.nstr.nestedMapping[0] = true;
+				str.nstr.nestedMapping[1] = false;
+				delete str;
+			}
+			function getTopValue() returns(uint topValue){
+				topValue = str.topValue;
+			}
+			function getNestedValue() returns(uint nestedValue){
+				nestedValue = str.nstr.nestedValue;
+			}
+			function getTopMapping(uint index) returns(uint ret) {
+			   ret = str.topMapping[index];
+			}
+			function getNestedMapping(uint index) returns(bool ret) {
+				return str.nstr.nestedMapping[index];
+			}
+			function deleteStruct() {
+				delete str;
+			}
+		})";
+
+	compileAndRun(sourceCode);
+
+	BOOST_CHECK(callContractFunction("getTopValue()") == encodeArgs(0));
+	BOOST_CHECK(callContractFunction("getNestedValue()") == encodeArgs(0));
+	// mapping values should be the same
+	BOOST_CHECK(callContractFunction("getTopMapping(uint256)", 0) == encodeArgs(1));
+	BOOST_CHECK(callContractFunction("getTopMapping(uint256)", 1) == encodeArgs(2));
+	BOOST_CHECK(callContractFunction("getNestedMapping(uint256)", 0) == encodeArgs(true));
+	BOOST_CHECK(callContractFunction("getNestedMapping(uint256)", 1) == encodeArgs(false));
+}
+
 BOOST_AUTO_TEST_CASE(constructor)
 {
 	char const* sourceCode = "contract test {\n"
@@ -1243,6 +1291,7 @@ BOOST_AUTO_TEST_CASE(constructor_arguments)
 		contract Helper {
 			string3 name;
 			bool flag;
+
 			function Helper(string3 x, bool f) {
 				name = x;
 				flag = f;
@@ -1259,6 +1308,7 @@ BOOST_AUTO_TEST_CASE(constructor_arguments)
 			function getName() returns (string3 ret) { return h.getName(); }
 		})";
 	compileAndRun(sourceCode, 0, "Main");
+
 	BOOST_REQUIRE(callContractFunction("getFlag()") == encodeArgs(true));
 	BOOST_REQUIRE(callContractFunction("getName()") == encodeArgs("abc"));
 }

@@ -178,7 +178,7 @@ public:
 	int getNumBits() const { return m_bits; }
 	bool isHash() const { return m_modifier == Modifier::HASH || m_modifier == Modifier::ADDRESS; }
 	bool isAddress() const { return m_modifier == Modifier::ADDRESS; }
-	bool isSigned() const { return m_modifier == Modifier::SIGNED; }
+	int isSigned() const { return m_modifier == Modifier::SIGNED; }
 
 	static const MemberList AddressMemberList;
 
@@ -315,11 +315,7 @@ class StructType: public Type
 public:
 	virtual Category getCategory() const override { return Category::STRUCT; }
 	StructType(StructDefinition const& _struct): m_struct(_struct) {}
-	virtual TypePointer unaryOperatorResult(Token::Value _operator) const override
-	{
-		return _operator == Token::DELETE ? shared_from_this() : TypePointer();
-	}
-
+	virtual TypePointer unaryOperatorResult(Token::Value _operator) const override;
 	virtual bool operator==(Type const& _other) const override;
 	virtual u256 getStorageSize() const override;
 	virtual bool canLiveOutsideStorage() const override;
@@ -352,10 +348,6 @@ public:
 
 	virtual Category getCategory() const override { return Category::FUNCTION; }
 	explicit FunctionType(FunctionDefinition const& _function, bool _isInternal = true);
-	FunctionType(strings const& _parameterTypes, strings const& _returnParameterTypes,
-				 Location _location = Location::INTERNAL):
-		FunctionType(parseElementaryTypeVector(_parameterTypes), parseElementaryTypeVector(_returnParameterTypes),
-					 _location) {}
 	FunctionType(TypePointers const& _parameterTypes, TypePointers const& _returnParameterTypes,
 				 Location _location = Location::INTERNAL):
 		m_parameterTypes(_parameterTypes), m_returnParameterTypes(_returnParameterTypes),
@@ -375,8 +367,6 @@ public:
 	std::string getCanonicalSignature() const;
 
 private:
-	static TypePointers parseElementaryTypeVector(strings const& _types);
-
 	TypePointers m_parameterTypes;
 	TypePointers m_returnParameterTypes;
 	Location m_location;

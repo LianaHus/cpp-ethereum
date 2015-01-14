@@ -35,7 +35,7 @@ namespace solidity
 
 shared_ptr<Type const> Type::fromElementaryTypeName(Token::Value _typeToken)
 {
-	solAssert(Token::isElementaryTypeName(_typeToken), "Elementary type name expected.");
+	solAssert(Token::isElementaryTypeName(_typeToken), "");
 
 	if (Token::INT <= _typeToken && _typeToken <= Token::HASH256)
 	{
@@ -147,7 +147,7 @@ TypePointer IntegerType::unaryOperatorResult(Token::Value _operator) const
 {
 	// "delete" is ok for all integer types
 	if (_operator == Token::DELETE)
-		return shared_from_this();
+		return make_shared<VoidType>();
 	// no further unary operators for addresses
 	else if (isAddress())
 		return TypePointer();
@@ -204,12 +204,18 @@ TypePointer IntegerType::binaryOperatorResult(Token::Value _operator, TypePointe
 }
 
 const MemberList IntegerType::AddressMemberList =
-	MemberList({{"balance", make_shared<IntegerType >(256)},
-				{"callstring32", make_shared<FunctionType>(strings{"string32"}, strings{},
-														   FunctionType::Location::BARE)},
-				{"callstring32string32", make_shared<FunctionType>(strings{"string32", "string32"},
-																   strings{}, FunctionType::Location::BARE)},
-				{"send", make_shared<FunctionType>(strings{"uint"}, strings{}, FunctionType::Location::SEND)}});
+	MemberList({{"balance",
+					make_shared<IntegerType >(256)},
+				{"callstring32",
+					make_shared<FunctionType>(TypePointers({make_shared<StaticStringType>(32)}),
+											  TypePointers(), FunctionType::Location::BARE)},
+				{"callstring32string32",
+					make_shared<FunctionType>(TypePointers({make_shared<StaticStringType>(32),
+															make_shared<StaticStringType>(32)}),
+											  TypePointers(), FunctionType::Location::BARE)},
+				{"send",
+					make_shared<FunctionType>(TypePointers({make_shared<IntegerType>(256)}),
+											  TypePointers(), FunctionType::Location::SEND)}});
 
 shared_ptr<IntegerConstantType const> IntegerConstantType::fromLiteral(string const& _literal)
 {
@@ -491,6 +497,11 @@ u256 ContractType::getFunctionIdentifier(string const& _functionName) const
 	return Invalid256;
 }
 
+TypePointer StructType::unaryOperatorResult(Token::Value _operator) const
+{
+	return _operator == Token::DELETE ? make_shared<VoidType>() : TypePointer();
+}
+
 bool StructType::operator==(Type const& _other) const
 {
 	if (_other.getCategory() != getCategory())
@@ -617,15 +628,6 @@ string FunctionType::getCanonicalSignature() const
 		ret += (*it)->toString() + (it + 1 == m_parameterTypes.cend() ? "" : ",");
 
 	return ret + ")";
-}
-
-TypePointers FunctionType::parseElementaryTypeVector(strings const& _types)
-{
-	TypePointers pointers;
-	pointers.reserve(_types.size());
-	for (string const& type: _types)
-		pointers.push_back(Type::fromElementaryTypeName(Token::fromIdentifierOrKeyword(type)));
-	return pointers;
 }
 
 bool MappingType::operator==(Type const& _other) const
