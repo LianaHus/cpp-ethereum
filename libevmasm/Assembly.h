@@ -67,6 +67,8 @@ public:
 	AssemblyItem appendJumpI() { auto ret = append(newPushTag()); append(Instruction::JUMPI); return ret; }
 	AssemblyItem appendJump(AssemblyItem const& _tag) { auto ret = append(_tag.pushTag()); append(Instruction::JUMP); return ret; }
 	AssemblyItem appendJumpI(AssemblyItem const& _tag) { auto ret = append(_tag.pushTag()); append(Instruction::JUMPI); return ret; }
+	AssemblyItem appendJumpForException() {  auto ret = append(AssemblyItem(PushTag,  m_usedTags++)); append(Instruction::JUMP); return ret; } // todo: implement
+
 	template <class T> Assembly& operator<<(T const& _d) { append(_d); return *this; }
 	AssemblyItems const& getItems() const { return m_items; }
 	AssemblyItem const& back() const { return m_items.back(); }
@@ -97,7 +99,6 @@ public:
 		const StringMap &_sourceCodes = StringMap(),
 		bool _inJsonFormat = false
 	) const;
-
 protected:
 	std::string getLocationFromSources(StringMap const& _sourceCodes, SourceLocation const& _location) const;
 	void donePath() { if (m_totalDeposit != INT_MAX && m_totalDeposit != m_deposit) BOOST_THROW_EXCEPTION(InvalidDeposit()); }

@@ -226,7 +226,7 @@ Json::Value Assembly::streamAsmJson(ostream& _out, StringMap const& _sourceCodes
 			collection.append(
 				createJsonValue("tag", i.getLocation().start, i.getLocation().end, string(i.data())));
 			collection.append(
-				createJsonValue("JUMDEST", i.getLocation().start, i.getLocation().end));
+				createJsonValue("JUMPDEST", i.getLocation().start, i.getLocation().end));
 			break;
 		case PushData:
 			collection.append(createJsonValue("PUSH data", i.getLocation().start, i.getLocation().end, toStringInHex(i.data())));
@@ -447,7 +447,7 @@ bytes Assembly::assemble() const
 		}
 		case Tag:
 			tagPos[(unsigned)i.data()] = ret.size();
-			ret.push_back((byte)Instruction::JUMPDEST);
+			ret.push_back((byte)Instruction::JUMPDEST); //todo check for errortag
 			break;
 		default:
 			BOOST_THROW_EXCEPTION(InvalidOpcode());

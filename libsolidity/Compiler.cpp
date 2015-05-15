@@ -188,7 +188,7 @@ void Compiler::appendFunctionSelector(ContractDefinition const& _contract)
 		appendReturnValuePacker(FunctionType(*fallback).getReturnParameterTypes());
 	}
 	else
-		m_context << eth::Instruction::STOP; // function not found
+		m_context.appendJumpForException(); // function not found
 
 	for (auto const& it: interfaceFunctions)
 	{
