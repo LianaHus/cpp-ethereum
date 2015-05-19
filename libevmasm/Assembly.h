@@ -67,7 +67,7 @@ public:
 	AssemblyItem appendJumpI() { auto ret = append(newPushTag()); append(Instruction::JUMPI); return ret; }
 	AssemblyItem appendJump(AssemblyItem const& _tag) { auto ret = append(_tag.pushTag()); append(Instruction::JUMP); return ret; }
 	AssemblyItem appendJumpI(AssemblyItem const& _tag) { auto ret = append(_tag.pushTag()); append(Instruction::JUMPI); return ret; }
-	AssemblyItem appendJumpForException() {  auto ret = append(AssemblyItem(PushTag,  m_usedTags++)); append(Instruction::JUMP); return ret; } // todo: implement
+	AssemblyItem errorTag() { return AssemblyItem(PushTag,  0); }
 
 	template <class T> Assembly& operator<<(T const& _d) { append(_d); return *this; }
 	AssemblyItems const& getItems() const { return m_items; }
@@ -110,7 +110,8 @@ private:
 	Json::Value createJsonValue(std::string _name, int _begin, int _end, std::string _value = std::string(), std::string _jumpType = std::string()) const;
 
 protected:
-	unsigned m_usedTags = 0;
+	// 0 is reserved for exception
+	unsigned m_usedTags = 1;
 	AssemblyItems m_items;
 	mutable std::map<h256, bytes> m_data;
 	std::vector<Assembly> m_subs;

@@ -457,7 +457,7 @@ void ArrayUtils::accessIndex(ArrayType const& _arrayType) const
 	// check out-of-bounds access
 	m_context << eth::Instruction::DUP2 << eth::Instruction::LT << eth::Instruction::ISZERO;
 	// out-of-bounds access throws exception
-	m_context.appendConditionalJumpTo(m_context.appendJumpForException());
+	m_context.appendConditionalJumpTo(m_context.errorTag());
 
 	// stack: <base_ref> <index>
 	m_context << eth::Instruction::SWAP1;
