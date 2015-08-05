@@ -173,6 +173,10 @@ function(configureProject)
 		add_definitions(-DETH_SOLIDITY)
 	endif()
 
+	if (SERPENT)
+		add_definitions(-DETH_SERPENT)
+	endif()
+
 	if (GUI)
 		add_definitions(-DETH_GUI)
 	endif()
