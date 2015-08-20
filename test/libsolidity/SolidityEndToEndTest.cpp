@@ -5161,6 +5161,17 @@ BOOST_AUTO_TEST_CASE(string_as_mapping_key)
 		) == encodeArgs(u256(7 + i)));
 }
 
+BOOST_AUTO_TEST_CASE(accessors_for_const_state_variables)
+{
+	char const* sourceCode = R"(
+		contract Lotto{
+			uint constant public ticketPrice = 1;
+		}
+	)";
+	compileAndRun(sourceCode);
+	BOOST_CHECK(callContractFunction("ticketPrice()") == encodeArgs(u256(1)));
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 
 }
